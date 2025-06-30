@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -25,6 +25,7 @@ export default function FileUploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -43,6 +44,10 @@ export default function FileUploadPage() {
       setDragActive(false)
     }
   }
+
+   const handleClickDrop = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
@@ -151,6 +156,7 @@ export default function FileUploadPage() {
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
+              onClick={handleClickDrop}
             >
               {selectedFile ? (
                 <div className="space-y-4">
@@ -189,6 +195,7 @@ export default function FileUploadPage() {
               <Input
                 id="file-input"
                 type="file"
+                ref={fileInputRef}
                 onChange={handleFileSelect}
                 disabled={uploading}
                 className="cursor-pointer"
