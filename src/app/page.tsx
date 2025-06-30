@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Upload, FileText, CheckCircle, AlertCircle, X } from "lucide-react"
+import { Upload, FileText, CheckCircle, AlertCircle, X, Activity } from "lucide-react"
 
 interface ApiResponse {
   timestamp: string
@@ -248,6 +248,24 @@ export default function FileUploadPage() {
                 </AlertDescription>
               </Alert>
             )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Análise de Dados
+            </CardTitle>
+            <CardDescription>Preencha os dados do paciente para análise do tempo de cura</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full" size="lg">
+              <a href="/analise">
+                <Activity className="w-4 h-4 mr-2" />
+                Iniciar Análise
+              </a>
+            </Button>
           </CardContent>
         </Card>
 
