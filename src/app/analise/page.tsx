@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { ChevronLeft, ChevronRight, Activity, CheckCircle, AlertCircle, ArrowLeft, Brain } from "lucide-react"
 import type { TuberculosisData, PredictionResponse, ModelStatus } from "@/types/tuberculosis"
+import Link from "next/link"
 
 const TOTAL_STEPS = 13
 
@@ -110,7 +111,7 @@ export default function TuberculosisAnalysisPage() {
     }
   }
 
-  const updateFormData = (field: keyof TuberculosisData, value: any) => {
+  const updateFormData = (field: keyof TuberculosisData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -145,7 +146,7 @@ export default function TuberculosisAnalysisPage() {
         probabilidade: 0,
         timestamp: new Date().toISOString(),
         status: 500,
-        error: "Erro de conexão com o servidor",
+        error: error instanceof Error ? error.message : "Erro de conexão com o servidor",
       })
     } finally {
       setIsSubmitting(false)
@@ -482,10 +483,10 @@ export default function TuberculosisAnalysisPage() {
                 </AlertDescription>
               </Alert>
               <Button asChild className="w-full" size="lg">
-                <a href="/">
+                <Link href="/">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar para Treinamento
-                </a>
+                </Link>
               </Button>
             </CardContent>
           </Card>

@@ -91,7 +91,7 @@ export default function FileUploadPage() {
         setEncryptedFilePath(result.data)
         setTimeout(() => setShowTrainingDialog(true), 1000)
       }
-    } catch (error) {
+    } catch {
       setResponse({
         timestamp: new Date().toISOString(),
         status: 500,
@@ -130,7 +130,7 @@ export default function FileUploadPage() {
           clearFile()
         }, 2000)
       }
-    } catch (error) {
+    } catch {
       setTrainingResult({
         success: false,
         message: "Erro de conexão com o servidor",

@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import type { TuberculosisRNACommand, TrainingResponse } from "@/types/tuberculosis"
+import type { TuberculosisRNACommand, TrainingResponse, ModelStatus } from "@/types/tuberculosis"
 
 declare global {
     // eslint-disable-next-line no-var
-    var modelStatus: any | undefined;
+    var modelStatus: ModelStatus | undefined;
 }
 
 export async function POST(request: NextRequest) {

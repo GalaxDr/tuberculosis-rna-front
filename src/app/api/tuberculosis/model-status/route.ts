@@ -42,7 +42,7 @@ export async function GET() {
                 isTrained: true,
                 trainedAt: new Date().toISOString(), // In production, store this properly
             } as ModelStatus)
-        } catch (error) {
+        } catch {
             // If there's a connection error, assume model is not trained
             return NextResponse.json({
                 isTrained: false,
