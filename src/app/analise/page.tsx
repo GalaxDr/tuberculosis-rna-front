@@ -536,7 +536,7 @@ export default function TuberculosisAnalysisPage() {
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 text-lg">
                             <Brain className="w-5 h-5" />
-                            Entrada do Neurônio
+                            Entrada RNA
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -564,7 +564,7 @@ export default function TuberculosisAnalysisPage() {
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 text-lg">
                             <Activity className="w-5 h-5" />
-                            Saída Recognize
+                            Saída RNA
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -578,7 +578,7 @@ export default function TuberculosisAnalysisPage() {
                                     style={{ width: `${value * 100}%` }}
                                   />
                                 </div>
-                                <span className="text-sm font-mono w-20 text-right">{(value * 100).toFixed(2)}%</span>
+                                <span className="text-sm font-mono w-20 text-right">{(value).toFixed(5)}</span>
                               </div>
                             ))}
                           </div>
