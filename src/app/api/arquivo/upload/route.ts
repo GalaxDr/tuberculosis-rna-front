@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     // Replace with your actual Spring Boot API URL
     const SPRING_API_URL = process.env.SPRING_API_URL || "http://localhost:8080"
 
-    const response = await fetch(`${SPRING_API_URL}/arquivo/upload`, {
+    const response = await fetch(`${SPRING_API_URL}/tuberculosis-rna/arquivo/upload`, {
       method: "POST",
       body: springFormData,
     })

@@ -96,4 +96,32 @@ export interface PredictionResponse {
   timestamp: string
   status: number
   error?: string
+  entradaNeuronio?: number[] | null
+  saidaRecognize?: number[] | null
+}
+
+// Novos tipos para treinamento
+export interface TuberculosisRNACommand {
+  encryptedFilePath: string
+  numCamadas: number
+  tamCamada: number
+  taxaAprendizado: number
+  margemErro: number
+  numInteracoes: number
+}
+
+export interface TrainingResponse {
+  success: boolean
+  message: string
+  modelId?: string
+  timestamp: string
+  status: number
+  error?: string
+}
+
+export interface ModelStatus {
+  isTrained: boolean
+  modelId?: string
+  trainedAt?: string
+  parameters?: TuberculosisRNACommand
 }

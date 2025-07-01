@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Replace with your actual Spring Boot API URL
     const SPRING_API_URL = process.env.SPRING_API_URL || "http://localhost:8080"
 
-    const response = await fetch(`${SPRING_API_URL}/tuberculosis/predict`, {
+    const response = await fetch(`${SPRING_API_URL}/tuberculosis-rna/rna/recognize`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -54,13 +54,30 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json()
 
-    // Transform the response to match our interface
+    // Handle the new response format
+    if (result.status === 400 && result.error === "Rede neural não treinada.") {
+      return NextResponse.json(
+        {
+          tempoCura: "",
+          probabilidade: 0,
+          timestamp: result.timestamp,
+          status: 400,
+          error: "Modelo não treinado. Treine o modelo antes de realizar análises.",
+          entradaNeuronio: null,
+          saidaRecognize: null,
+        } as PredictionResponse,
+        { status: 400 },
+      )
+    }
+
     const predictionResponse: PredictionResponse = {
-      tempoCura: result.data?.tempoCura || result.tempoCura || "Não determinado",
-      probabilidade: result.data?.probabilidade || result.probabilidade || 0,
+      tempoCura: result.data?.tempoCura || "Não determinado",
+      probabilidade: 0, // Not provided in the new API
       timestamp: result.timestamp || new Date().toISOString(),
       status: result.status || 200,
       error: result.error,
+      entradaNeuronio: result.data?.entradaNeuronio || null,
+      saidaRecognize: result.data?.saidaRecognize || null,
     }
 
     return NextResponse.json(predictionResponse)

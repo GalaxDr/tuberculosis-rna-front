@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { ChevronLeft, ChevronRight, Activity, CheckCircle, AlertCircle } from "lucide-react"
-import type { TuberculosisData, PredictionResponse } from "@/types/tuberculosis"
+import { ChevronLeft, ChevronRight, Activity, CheckCircle, AlertCircle, ArrowLeft, Brain } from "lucide-react"
+import type { TuberculosisData, PredictionResponse, ModelStatus } from "@/types/tuberculosis"
 
 const TOTAL_STEPS = 13
 
@@ -17,100 +17,73 @@ const stepTitles = [
   "Idade",
   "Sexo",
   "Raça",
-  "Zona de Residência",
+  "Zona",
   "Tipo de Entrada",
-  "Radiografia de Tórax",
-  "Forma de Tuberculose",
-  "Agravante: AIDS",
-  "Agravante: Alcoolismo",
-  "Agravante: Diabetes",
-  "Agravante: Doença Mental",
+  "Radiografia",
+  "Forma TB",
+  "AIDS",
+  "Alcoolismo",
+  "Diabetes",
+  "Doença Mental",
   "Baciloscopia",
-  "Cultura de Escarro",
+  "Cultura",
 ]
 
 const options = {
-  RacaOptions: {
-    1: { value: 1, descr: "Branca" },
-    2: { value: 2, descr: "Preta" },
-    3: { value: 3, descr: "Amarela" },
-    4: { value: 4, descr: "Parda" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-  ZonaOptions: {
-    1: { value: 1, descr: "Urbana" },
-    2: { value: 2, descr: "Rural" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-  TipoEntradaOptions: {
-    1: { value: 1, descr: "Hospital" },
-    2: { value: 2, descr: "Clínica" },
-    3: { value: 3, descr: "Residência" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-  RadiografiaToraxOptions: {
-    1: { value: 1, descr: "Normal" },
-    2: { value: 2, descr: "Anormal" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-  FormaTuberculoseOptions: {
-    1: { value: 1, descr: "Pulmonar" },
-    2: { value: 2, descr: "Extra Pulmonar" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-  AgravanteOptions: {
-    1: { value: 1, descr: "Sim" },
-    2: { value: 2, descr: "Não" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-  BasciloscopiaOptions: {
-    1: { value: 1, descr: "Positivo" },
-    2: { value: 2, descr: "Negativo" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-  CulturaEscarroOptions: {
-    1: { value: 1, descr: "Positivo" },
-    2: { value: 2, descr: "Negativo" },
-    9: { value: 9, descr: "Ignorado" },
-  },
-}
-
-// Função auxiliar para obter a descrição de um valor
-const getOptionDescription = (field: string, value: any): string => {
-  if (!value) return "-"
-
-  switch (field) {
-    case "sexo":
-      if (value === "1") return "Masculino"
-      if (value === "2") return "Feminino"
-      if (value === "9") return "Ignorado"
-      return value
-    case "raca":
-      return Object.values(options.RacaOptions).find((opt) => opt.value === value)?.descr || value.toString()
-    case "zona":
-      return Object.values(options.ZonaOptions).find((opt) => opt.value === value)?.descr || value.toString()
-    case "tipoEntrada":
-      return Object.values(options.TipoEntradaOptions).find((opt) => opt.value === value)?.descr || value.toString()
-    case "radiografiaTorax":
-      return (
-        Object.values(options.RadiografiaToraxOptions).find((opt) => opt.value === value)?.descr || value.toString()
-      )
-    case "formaTuberculose":
-      return (
-        Object.values(options.FormaTuberculoseOptions).find((opt) => opt.value === value)?.descr || value.toString()
-      )
-    case "agravanteAIDS":
-    case "agravanteAlcoolismo":
-    case "agravanteDiabetes":
-    case "agravanteDoencaMental":
-      return Object.values(options.AgravanteOptions).find((opt) => opt.value === value)?.descr || value.toString()
-    case "baciloscopia":
-      return Object.values(options.BasciloscopiaOptions).find((opt) => opt.value === value)?.descr || value.toString()
-    case "culturaEscarro":
-      return Object.values(options.CulturaEscarroOptions).find((opt) => opt.value === value)?.descr || value.toString()
-    default:
-      return value.toString()
-  }
+  sexo: [
+    { value: "M", label: "Masculino" },
+    { value: "F", label: "Feminino" },
+  ],
+  raca: [
+    { value: 1, label: "Branca" },
+    { value: 2, label: "Preta" },
+    { value: 3, label: "Amarela" },
+    { value: 4, label: "Parda" },
+    { value: 5, label: "Indígena" },
+    { value: 9, label: "Ignorado" },
+  ],
+  zona: [
+    { value: 1, label: "Urbana" },
+    { value: 2, label: "Rural" },
+    { value: 3, label: "Periurbana" },
+    { value: 9, label: "Ignorado" },
+  ],
+  tipoEntrada: [
+    { value: 1, label: "Caso Novo" },
+    { value: 2, label: "Recidiva" },
+    { value: 3, label: "Reingresso" },
+    { value: 4, label: "Não Sabe" },
+    { value: 5, label: "Transferência" },
+    { value: 6, label: "Pós Óbito" },
+  ],
+  radiografiaTorax: [
+    { value: 1, label: "Normal" },
+    { value: 2, label: "Suspeita" },
+    { value: 3, label: "Outra Patologia" },
+    { value: 4, label: "Não Realizada" },
+  ],
+  formaTuberculose: [
+    { value: 1, label: "Pulmonar" },
+    { value: 2, label: "Extrapulmonar" },
+    { value: 3, label: "Pulmonar + Extra" },
+  ],
+  agravante: [
+    { value: 1, label: "Sim" },
+    { value: 2, label: "Não" },
+    { value: 9, label: "Ignorado" },
+  ],
+  baciloscopia: [
+    { value: 1, label: "Positiva" },
+    { value: 2, label: "Negativa" },
+    { value: 3, label: "Não Realizada" },
+    { value: 4, label: "Não se Aplica" },
+  ],
+  culturaEscarro: [
+    { value: 1, label: "Positiva" },
+    { value: 2, label: "Negativa" },
+    { value: 3, label: "Em Andamento" },
+    { value: 4, label: "Não Realizada" },
+  ],
 }
 
 export default function TuberculosisAnalysisPage() {
@@ -118,52 +91,31 @@ export default function TuberculosisAnalysisPage() {
   const [formData, setFormData] = useState<Partial<TuberculosisData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [result, setResult] = useState<PredictionResponse | null>(null)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [modelStatus, setModelStatus] = useState<ModelStatus>({ isTrained: false })
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    checkModelStatus()
+  }, [])
+
+  const checkModelStatus = async () => {
+    try {
+      const response = await fetch("/api/tuberculosis/model-status")
+      const status: ModelStatus = await response.json()
+      setModelStatus(status)
+    } catch (error) {
+      console.error("Erro ao verificar status do modelo:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const updateFormData = (field: keyof TuberculosisData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user updates field
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
-    }
-  }
-
-  const validateCurrentStep = (): boolean => {
-    if (currentStep === 0 && (!formData.idade || formData.idade < 0 || formData.idade > 120)) {
-      setErrors({ idade: "Idade deve estar entre 0 e 120 anos" })
-      return false
-    }
-
-    // Para os outros campos, verificar se o valor foi selecionado
-    const fieldNames = [
-      "idade",
-      "sexo",
-      "raca",
-      "zona",
-      "tipoEntrada",
-      "radiografiaTorax",
-      "formaTuberculose",
-      "agravanteAIDS",
-      "agravanteAlcoolismo",
-      "agravanteDiabetes",
-      "agravanteDoencaMental",
-      "baciloscopia",
-      "culturaEscarro",
-    ]
-
-    const currentField = fieldNames[currentStep]
-    const currentValue = formData[currentField as keyof TuberculosisData]
-
-    if (currentStep > 0 && (currentValue === undefined || currentValue === null || currentValue === "")) {
-      setErrors({ [currentField]: "Este campo é obrigatório" })
-      return false
-    }
-
-    return true
   }
 
   const nextStep = () => {
-    if (validateCurrentStep() && currentStep < TOTAL_STEPS - 1) {
+    if (currentStep < TOTAL_STEPS - 1) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -175,17 +127,13 @@ export default function TuberculosisAnalysisPage() {
   }
 
   const submitAnalysis = async () => {
-    if (!validateCurrentStep()) return
-
     setIsSubmitting(true)
     setResult(null)
 
     try {
       const response = await fetch("/api/tuberculosis/predict", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
 
@@ -208,7 +156,6 @@ export default function TuberculosisAnalysisPage() {
     setFormData({})
     setCurrentStep(0)
     setResult(null)
-    setErrors({})
   }
 
   const renderStepContent = () => {
@@ -220,14 +167,22 @@ export default function TuberculosisAnalysisPage() {
             <Input
               id="idade"
               type="number"
-              min="0"
-              max="120"
+              min="1"
+              max="100"
               value={formData.idade || ""}
-              onChange={(e) => updateFormData("idade", Number.parseInt(e.target.value) || 0)}
-              placeholder="Digite a idade"
-              className={errors.idade ? "border-red-500" : ""}
+              onChange={(e) => {
+                const value = Number.parseInt(e.target.value)
+                if (value >= 1 && value <= 100) {
+                  updateFormData("idade", value)
+                } else if (e.target.value === "") {
+                  updateFormData("idade", "")
+                }
+              }}
+              placeholder="Digite a idade (1-100 anos)"
             />
-            {errors.idade && <p className="text-sm text-red-600">{errors.idade}</p>}
+            {formData.idade && (formData.idade < 1 || formData.idade > 100) && (
+              <p className="text-sm text-red-600">A idade deve estar entre 1 e 100 anos</p>
+            )}
           </div>
         )
 
@@ -235,14 +190,16 @@ export default function TuberculosisAnalysisPage() {
         return (
           <div className="space-y-4">
             <Label>Sexo</Label>
-            <Select value={formData.sexo?.toString()} onValueChange={(value) => updateFormData("sexo", value)}>
+            <Select value={formData.sexo || ""} onValueChange={(value) => updateFormData("sexo", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o sexo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Masculino</SelectItem>
-                <SelectItem value="2">Feminino</SelectItem>
-                <SelectItem value="9">Ignorado</SelectItem>
+                {options.sexo.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -253,16 +210,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Raça/Cor</Label>
             <Select
-              value={formData.raca?.toString()}
+              value={formData.raca?.toString() || ""}
               onValueChange={(value) => updateFormData("raca", Number.parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a raça/cor" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.RacaOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.raca.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -275,16 +232,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Zona de Residência</Label>
             <Select
-              value={formData.zona?.toString()}
+              value={formData.zona?.toString() || ""}
               onValueChange={(value) => updateFormData("zona", Number.parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a zona" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.ZonaOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.zona.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -297,16 +254,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Tipo de Entrada</Label>
             <Select
-              value={formData.tipoEntrada?.toString()}
+              value={formData.tipoEntrada?.toString() || ""}
               onValueChange={(value) => updateFormData("tipoEntrada", Number.parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de entrada" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.TipoEntradaOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.tipoEntrada.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -319,16 +276,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Radiografia de Tórax</Label>
             <Select
-              value={formData.radiografiaTorax?.toString()}
+              value={formData.radiografiaTorax?.toString() || ""}
               onValueChange={(value) => updateFormData("radiografiaTorax", Number.parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o resultado da radiografia" />
+                <SelectValue placeholder="Selecione o resultado" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.RadiografiaToraxOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.radiografiaTorax.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -341,16 +298,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Forma de Tuberculose</Label>
             <Select
-              value={formData.formaTuberculose?.toString()}
+              value={formData.formaTuberculose?.toString() || ""}
               onValueChange={(value) => updateFormData("formaTuberculose", Number.parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a forma de tuberculose" />
+                <SelectValue placeholder="Selecione a forma" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.FormaTuberculoseOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.formaTuberculose.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -363,16 +320,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Agravante: AIDS</Label>
             <Select
-              value={formData.agravanteAIDS?.toString()}
+              value={formData.agravanteAIDS?.toString() || ""}
               onValueChange={(value) => updateFormData("agravanteAIDS", Number.parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Paciente possui AIDS?" />
+                <SelectValue placeholder="Possui AIDS?" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.AgravanteOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.agravante.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -385,16 +342,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Agravante: Alcoolismo</Label>
             <Select
-              value={formData.agravanteAlcoolismo?.toString()}
+              value={formData.agravanteAlcoolismo?.toString() || ""}
               onValueChange={(value) => updateFormData("agravanteAlcoolismo", Number.parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Paciente possui alcoolismo?" />
+                <SelectValue placeholder="Possui alcoolismo?" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.AgravanteOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.agravante.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -407,16 +364,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Agravante: Diabetes</Label>
             <Select
-              value={formData.agravanteDiabetes?.toString()}
+              value={formData.agravanteDiabetes?.toString() || ""}
               onValueChange={(value) => updateFormData("agravanteDiabetes", Number.parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Paciente possui diabetes?" />
+                <SelectValue placeholder="Possui diabetes?" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.AgravanteOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.agravante.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -429,16 +386,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Agravante: Doença Mental</Label>
             <Select
-              value={formData.agravanteDoencaMental?.toString()}
+              value={formData.agravanteDoencaMental?.toString() || ""}
               onValueChange={(value) => updateFormData("agravanteDoencaMental", Number.parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Paciente possui doença mental?" />
+                <SelectValue placeholder="Possui doença mental?" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.AgravanteOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.agravante.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -451,16 +408,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Baciloscopia</Label>
             <Select
-              value={formData.baciloscopia?.toString()}
+              value={formData.baciloscopia?.toString() || ""}
               onValueChange={(value) => updateFormData("baciloscopia", Number.parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Resultado da baciloscopia" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.BasciloscopiaOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.baciloscopia.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -473,16 +430,16 @@ export default function TuberculosisAnalysisPage() {
           <div className="space-y-4">
             <Label>Cultura de Escarro</Label>
             <Select
-              value={formData.culturaEscarro?.toString()}
+              value={formData.culturaEscarro?.toString() || ""}
               onValueChange={(value) => updateFormData("culturaEscarro", Number.parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Resultado da cultura de escarro" />
+                <SelectValue placeholder="Resultado da cultura" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(options.CulturaEscarroOptions).map(([key, option]) => (
-                  <SelectItem key={key} value={option.value.toString()}>
-                    {option.descr}
+                {options.culturaEscarro.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -495,10 +452,52 @@ export default function TuberculosisAnalysisPage() {
     }
   }
 
-  if (result) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Verificando modelo...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!modelStatus.isTrained) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="max-w-2xl mx-auto space-y-6">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+                Modelo Não Treinado
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 text-center">
+              <Alert className="border-red-500">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription>
+                  <p className="font-medium text-red-800">Treine o modelo antes de realizar análises.</p>
+                </AlertDescription>
+              </Alert>
+              <Button asChild className="w-full" size="lg">
+                <a href="/">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Voltar para Treinamento
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (result) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-4xl mx-auto space-y-6">
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center gap-2">
@@ -515,22 +514,80 @@ export default function TuberculosisAnalysisPage() {
                 <Alert className="border-red-500">
                   <AlertCircle className="h-4 w-4 text-red-600" />
                   <AlertDescription>
-                    <p className="font-medium text-red-800">Erro na análise</p>
-                    <p className="text-sm text-red-700 mt-1">{result.error}</p>
+                    <p className="font-medium text-red-800">{result.error}</p>
                   </AlertDescription>
                 </Alert>
               ) : (
-                <div className="text-center space-y-4">
-                  <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">Tempo de Cura Previsto</h3>
-                    <p className="text-3xl font-bold text-green-900">{result.tempoCura}</p>
-                    {result.probabilidade && (
-                      <p className="text-sm text-green-700 mt-2">
-                        Probabilidade: {(result.probabilidade * 100).toFixed(1)}%
-                      </p>
+                <div className="space-y-6">
+                  {/* Tempo de Cura */}
+                  <div className="text-center">
+                    <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                      <h3 className="text-lg font-semibold text-green-800 mb-2">Tempo de Cura Previsto</h3>
+                      <p className="text-3xl font-bold text-green-900">{result.tempoCura}</p>
+                    </div>
+                  </div>
+
+                  {/* Dados da Rede Neural */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Entrada do Neurônio */}
+                    {result.entradaNeuronio && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Brain className="w-5 h-5" />
+                            Entrada do Neurônio
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-7 gap-1">
+                            {result.entradaNeuronio.map((value, index) => (
+                              <div
+                                key={index}
+                                className={`w-8 h-8 rounded flex items-center justify-center text-xs font-mono ${value === 1 ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"
+                                  }`}
+                              >
+                                {value}
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-2">
+                            Array de {result.entradaNeuronio.length} bits de entrada
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Saída Recognize */}
+                    {result.saidaRecognize && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Activity className="w-5 h-5" />
+                            Saída Recognize
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            {result.saidaRecognize.map((value, index) => (
+                              <div key={index} className="flex items-center gap-2">
+                                <span className="text-sm font-medium w-16">Saída {index + 1}:</span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-blue-500 h-2 rounded-full transition-all"
+                                    style={{ width: `${value * 100}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm font-mono w-20 text-right">{(value * 100).toFixed(2)}%</span>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-2">Probabilidades de saída da rede neural</p>
+                        </CardContent>
+                      </Card>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">
+
+                  <p className="text-sm text-gray-600 text-center">
                     Análise realizada em: {new Date(result.timestamp).toLocaleString("pt-BR")}
                   </p>
                 </div>
@@ -555,8 +612,8 @@ export default function TuberculosisAnalysisPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Análise de Tuberculose RNA</h1>
-          <p className="text-gray-600">Preencha os dados do paciente para análise do tempo de cura</p>
+          <h1 className="text-3xl font-bold text-gray-900">Análise de Tuberculose</h1>
+          <p className="text-gray-600">Preencha os dados do paciente</p>
         </div>
 
         <Card>
@@ -596,16 +653,11 @@ export default function TuberculosisAnalysisPage() {
               {currentStep === TOTAL_STEPS - 1 ? (
                 <Button onClick={submitAnalysis} disabled={isSubmitting} className="flex items-center gap-2">
                   {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Analisando...
-                    </>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <>
-                      <Activity className="w-4 h-4" />
-                      Analisar
-                    </>
+                    <Activity className="w-4 h-4" />
                   )}
+                  Analisar
                 </Button>
               ) : (
                 <Button onClick={nextStep} className="flex items-center gap-2">
@@ -613,23 +665,6 @@ export default function TuberculosisAnalysisPage() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Resumo dos Dados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              {Object.entries(formData).map(([key, value]) => (
-                <div key={key} className="flex justify-between">
-                  <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, " $1").trim()}:</span>
-                  <span className="font-medium">{getOptionDescription(key, value)}</span>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>
