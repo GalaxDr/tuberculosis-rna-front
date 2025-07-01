@@ -200,6 +200,43 @@ export default function FileUploadPage() {
           </CardContent>
         </Card>
 
+        {/* Parâmetros Atuais do Modelo */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              Parâmetros de Treinamento Atuais
+            </CardTitle>
+            <CardDescription>
+              Estes são os hiperparâmetros que serão utilizados no próximo treinamento. Você poderá alterá-los após o upload do arquivo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Nº de Camadas:</span>
+                <span className="font-semibold text-gray-900">{trainingParams.numCamadas}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Tamanho da Camada:</span>
+                <span className="font-semibold text-gray-900">{trainingParams.tamCamada}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Taxa de Aprendizado:</span>
+                <span className="font-semibold text-gray-900">{trainingParams.taxaAprendizado}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="font-medium text-gray-600">Margem de Erro:</span>
+                <span className="font-semibold text-gray-900">{trainingParams.margemErro}</span>
+              </div>
+              <div className="flex justify-between border-b pb-2 sm:col-span-2">
+                <span className="font-medium text-gray-600">Iterações (Épocas):</span>
+                <span className="font-semibold text-gray-900">{trainingParams.numInteracoes}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Upload */}
         <Card>
           <CardHeader>
