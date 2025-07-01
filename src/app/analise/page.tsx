@@ -582,7 +582,6 @@ export default function TuberculosisAnalysisPage() {
                               </div>
                             ))}
                           </div>
-                          <p className="text-sm text-gray-600 mt-2">Probabilidades de saída da rede neural</p>
                         </CardContent>
                       </Card>
                     )}
