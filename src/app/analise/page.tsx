@@ -524,7 +524,7 @@ export default function TuberculosisAnalysisPage() {
                   <div className="text-center">
                     <div className="bg-green-50 p-6 rounded-lg border border-green-200">
                       <h3 className="text-lg font-semibold text-green-800 mb-2">Tempo de Cura Previsto</h3>
-                      <p className="text-3xl font-bold text-green-900">{result.tempoCura}</p>
+                      <p className="text-3xl font-bold text-green-900">{result.tempoCura} dias</p>
                     </div>
                   </div>
 
